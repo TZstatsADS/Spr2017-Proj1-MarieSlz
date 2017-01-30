@@ -11,28 +11,28 @@ Inaugrual speech is the first official speech of any president of United States.
 
 [3] Shahin, Saif. "When scale meets depth: Integrating natural language processing and textual analysis for studying digital corpora." Communication Methods and Measures 10.1 (2016): 28-50.
 
-### Challenge 
+### Challenge
 
-In this project we will explore the texts of U. S. presidents' inaugrual speeches, from that of George Washington to that of Donald Trump which was delivered just today. 
+In this project we will explore the texts of U. S. presidents' inaugural speeches, from that of George Washington to that of Donald Trump which was delivered just today.
 
-You are tasked to explore the texts using tools from text mining and natural language processing such as sentiment analysis, topic modeling, etc, all available in `R` and write a small story about inaugural speeches of U.S. presidents on interesting trends and patterns identified by your analysis. 
+You are tasked to explore the texts using tools from text mining and natural language processing such as sentiment analysis, topic modeling, etc, all available in `R` and write a small story about inaugural speeches of U.S. presidents on interesting trends and patterns identified by your analysis.
 
-For this project, you will receive 59 inaugrual speeches that was scrapped from [The American Presidency Project](http://www.presidency.ucsb.edu/inaugurals.php). 
+For this project, you will receive 59 inaugural speeches that was scrapped from [The American Presidency Project](http://www.presidency.ucsb.edu/inaugurals.php).
 
-Even though this is an individual project, you are **encouraged** to discuss online and exchange ideas. 
+Even though this is an individual project, you are **encouraged** to discuss online and exchange ideas.
 
 The data set released contain:
 
-+ `InaugrationInfo.xlsx`: some basic information about the presidential inaugrations.
-+ `InaugrationDates.txt`: dates information about the presidential inaugrations. 
-+ `inaug[president]-[term].txt`: plain text files of the transcripts of inaugrual speeches. 
++ `InaugrationInfo.xlsx`: some basic information about the presidential inaugurations.
++ `InaugrationDates.txt`: dates information about the presidential inaugurations.
++ `inaug[president]-[term].txt`: plain text files of the transcripts of inaugural speeches. 
 
 #### Submission
 You should produce an R notebook (rmd and html files) in your GitHub project folder, where you should write a story or a blog post on presidential inaugural speeches based on your data analysis. Your story should be supported by your results and appropriate visualization
 
 ### Project organization
 
-A GitHub starter codes repo will be posted on piazza for you to fork and start your own project. The GitHub repo will come with suggested *milestones*. 
+A GitHub starter codes repo will be posted on piazza for you to fork and start your own project. The GitHub repo will come with suggested *milestones*.
 
 #### Useful resources
 
@@ -42,7 +42,7 @@ A GitHub starter codes repo will be posted on piazza for you to fork and start y
 * R [DT](http://www.htmlwidgets.org/showcase_datatables.html) package
 * R [tibble](https://cran.r-project.org/web/packages/tibble/vignettes/tibble.html)
 * [Rcharts](http://rcharts.io/gallery/), quick interactive plots
-* [htmlwidgets](http://www.htmlwidgets.org/), javascript library adaptation in R. 
+* [htmlwidgets](http://www.htmlwidgets.org/), javascript library adaptation in R.
 
 ##### Project tools
 * A brief [guide](http://rogerdudler.github.io/git-guide/) to git.
@@ -63,7 +63,7 @@ For this project we will give **tutorials** and give comments on:
 
 #### Repositary requirement
 
-The final repo should be under our class github organization (TZStatsADS) and be organized according to the structure of the starter codes. 
+The final repo should be under our class github organization (TZStatsADS) and be organized according to the structure of the starter codes.
 
 ```
 proj/
@@ -74,17 +74,17 @@ proj/
 ├──output/
 ├── README
 ```
-- The `data` folder contains the raw data of this project. These data should NOT be processed inside this folder. Processed data should be saved to `output` folder. This is to ensure that the raw data will not be altered. 
-- The `doc` folder should have documentations for this project, presentation files and other supporting materials. 
-- The `figs` folder contains figure files produced during the project and running of the codes. 
-- The `lib` folder contain computation codes for your data analysis. Make sure your README.md is informative about what are the programs found in this folder. 
+- The `data` folder contains the raw data of this project. These data should NOT be processed inside this folder. Processed data should be saved to `output` folder. This is to ensure that the raw data will not be altered.
+- The `doc` folder should have documentations for this project, presentation files and other supporting materials.
+- The `figs` folder contains figure files produced during the project and running of the codes.
+- The `lib` folder contain computation codes for your data analysis. Make sure your README.md is informative about what are the programs found in this folder.
 - The `output` folder is the holding place for intermediate and final computational results.
 
-The root README.md should contain your name and an abstract of your findings. 
+The root README.md should contain your name and an abstract of your findings.
 
 #### Suggested workflow
-This is a relatively short project. We only have about two weeks of working time. 
+This is a relatively short project. We only have about two weeks of working time.
 
 1. [wk1] Week 1 is the **data processing and mining** week. Read data description, **project requirement**, browse data, and think about what to do and try out different tools you find related to this task.
-2. [wk1] Try out ideas on a *subset* of the data set to get a sense of computational burden of this project. 
-4. [wk2] Explore data for interesting trends and start writing your data story. 
+2. [wk1] Try out ideas on a *subset* of the data set to get a sense of computational burden of this project.
+4. [wk2] Explore data for interesting trends and start writing your data story.
