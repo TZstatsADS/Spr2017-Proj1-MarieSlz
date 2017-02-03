@@ -488,7 +488,7 @@ Overall emotions are less present in the second speeches – trust has reduced b
 
 When reading speeches, we can affect a sentiment score to each part of the speech. In the graphs below each speech is separated in 20 sections of equal lengths. Then a sentiment score is computed for each section and plotted. 
 
-```{r, fig.height=40, fig.align="center"}
+```{r, fig.align="center"}
 a <- ggplot.flow(ff.all, "AbrahamLincoln")
 a
 b <- ggplot.flow(ff.all, "RichardNixon")
