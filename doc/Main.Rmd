@@ -11,9 +11,9 @@ This is an *Interactive* [R Markdown](http://rmarkdown.rstudio.com) Notebook. It
 This analysis is based on the inaugural speeches of all the US presidents since George Washington in 1789.  
 With this study, I would like to determine what is the mindset of a president beginning his second term in office. Is there any difference with a president beginning his first term? How a president appointed for the second time (and the last one) begin his new term?  For this reason, the study will focus on presidents who have done two terms in office.  
 I will try to answer the following questions:  
-* Is the president more confident during the second inaugural speech?  
-* Are the subjects of his speech the same?  
-* Is he more optimistic or more realistic?   
+*  Is the president more confident during the second inaugural speech?  
+*  Are the subjects of his speech the same?  
+*  Is he more optimistic or more realistic?   
 Of course, I'll adapt my study depending on what I find during the process.
 
 [Note] Don't forget to download the entire folder provided as each subfolder is important. 
@@ -24,7 +24,8 @@ Of course, I'll adapt my study depending on what I find during the process.
 packages.used=c("tidytext", "dplyr", "tm", "ggplot2", "wordcloud", "rvest", 
                 "tibble", "qdap", "sentimentr", "gplots", "syuzhet", 
                 "factoextra", "beeswarm", "scales", "RColorBrewer", "RANN", 
-                "topicmodels", "splitstackshape", "tidyr", "shiny", "gridExtra")
+                "topicmodels", "splitstackshape", "tidyr", "shiny", "gridExtra",
+                "grid")
 
 # check packages that need to be installed.
 packages.needed=setdiff(packages.used, intersect(installed.packages()[,1], 
@@ -58,6 +59,7 @@ library("splitstackshape")
 library("tidyr")
 library("shiny")
 library("gridExtra")
+library("grid")
 
 # source functions
 source("../lib/processing.R")
@@ -381,15 +383,17 @@ grid.arrange(a, b, nrow=1, ncol=2)
 ```
 
 Indeed, the comparison of those two graphs show that the conflict lexicon is more present in the second speeches. Of course, that doesn't mean that it is true for all presidents.
-I will let to the reader the opportunity to select a president and to display the negative term associated with their first and their second inaugural speeches.
+I will let to the reader the opportunity to select a president and to display the negative terms associated with their first and their second inaugural speeches.
 
 ```{r}
 
+# creating shiny app
 ui <- fluidPage(selectInput(inputId = "data","", president.list), 
                 plotOutput(outputId = "plot")
 )
 
 server <- function(input, output) {
+  # subset usefull tibble
   dfa <- reactive({
     summarise(group_by(dtm.idf.sentiment, word, term, president), score=sum(negative))
   })
@@ -435,9 +439,11 @@ shinyApp(ui = ui, server = server, options = list(height = 600))
 
 ## Step 10 - Emotion Analysis
 
-At at a higher levels we can display the emotions 
+At at a higher levels we can display the emotions present in the speeches. Eight emotions will be displayed: trust, surprise, sadneess, joy feat, disgust, anticipation and anger. Those emotions are mapped with specific words in the same database as the one we used earlier. The goal of this section is to determine if any emotion is responsible for the less optimistic mindset of presidents at the beginning of their second term in office.
+The first panel will display those emotions for the first inaugural speech of the 16 presidents and the second panel for the second term. 
 
-```{r}
+```{r, fig.align="center"}
+# compute an emotion score for each speech and each of the 8 emotions
 emotion.score <- summarise(group_by(dtm.idf.sentiment, term, president),
                            anger.score = sum(anger),
                            joy.score = sum(joy),
@@ -453,62 +459,135 @@ emotion.score <- gather(emotion.score, emotion, score,
                  trust.score))
 emotion.score$emotion <- substr(emotion.score$emotion, 0, nchar(emotion.score$emotion)-6)
 
-emotion.score <- filter(emotion.score, term==c(1,2))
-g <- ggplot(emotion.score, aes(x=emotion, y=score, fill=president)) +
+emotion.score <- filter(emotion.score, term %in% c(1,2))
+
+g <- ggplot(emotion.score[emotion.score$term==1,], 
+            aes(x=reorder(emotion,score), y=score, fill=president)) +
   geom_bar(stat="identity", position="stack") +
   coord_flip() +
   xlab("") + 
-  facet_wrap(~term, nrow=2)
-g
+  facet_wrap(~term, nrow=2) + 
+  expand_limits(y=c(0,3700))
+
+h <- ggplot(emotion.score[emotion.score$term==2,], 
+            aes(x=reorder(emotion,score), y=score, fill=president)) +
+  geom_bar(stat="identity", position="stack") +
+  coord_flip() +
+  xlab("") + 
+  facet_wrap(~term, nrow=2) +
+  expand_limits(y=c(0,3700))
+
+grid_arrange_shared_legend(g, h, ncol=1, nrow=2, position="right")
 ```
 
-## Step 11 - Topic Modeling
+Trust is indeed a very important emotion, which takes the more space in all speeches, for all presidents and across time. 
+The relative importance of those eight different emotions is almost conserved - they are almost in the same order in both graphs. However, one can notice that fear has gained importance in the second panel.
+Overall emotions are less present in the second speeches – trust has reduced by one fourth.
+
+## Step 11 - Sentiment analysis when going through speeches
+
+When reading speeches, we can affect a sentiment score to each part of the speech. In the graphs below each speech is separated in 20 sections of equal lengths. Then a sentiment score is computed for each section and plotted. 
+
+```{r, fig.height=40, fig.align="center"}
+a <- ggplot.flow(ff.all, "AbrahamLincoln")
+a
+b <- ggplot.flow(ff.all, "RichardNixon")
+b
+c <- ggplot.flow(ff.all, "GeorgeWBush")
+c
+d <- ggplot.flow(ff.all, "RonaldReagan")
+d
+e <- ggplot.flow(ff.all, "BarackObama")
+e
+f <- ggplot.flow(ff.all, "WilliamJClinton")
+f
+#grid.arrange(a, b, c, d, e, ncol=1, nrow=5)
+```
+
+Overall, the number of negative sections seems to have increased from the 1st speech to the 2nd speech in this subset of presidents. However there is no strong pattern. 
+
+What would be interesting now is to try to understand what concerned presidents. To do that, we will use topic modelling. 
+
+## Step 12 - Topic Modeling
 
 ```{r}
-#Set parameters for Gibbs sampling
+
+# subset dtm - 1§ president having done two terms in office
+list1 <- paste0("inaug",president.list,"-1.txt")
+list2 <- paste0("inaug",president.list,"-2.txt")
+list <- c(list1, list2)
+dtm.subset <- dtm[list,]
+
+# set parameters for Gibbs sampling
 burnin <- 4000
 iter <- 2000
 thin <- 500
 seed <-list(2003,5,63,100001,765)
 nstart <- 5
 best <- TRUE
-#Number of topics
+# number of topics
 k <- 15
-#Run LDA using Gibbs sampling
-ldaOut <-LDA(dtm, k, method="Gibbs", control=list(nstart=nstart, 
+
+# run LDA using Gibbs sampling
+ldaOut.1 <-LDA(dtm.subset, k, method="Gibbs", control=list(nstart=nstart, 
                                                  seed = seed, best=best,
                                                  burnin = burnin, iter = iter, 
                                                  thin=thin))
-# visualisation
-ap_lda <- LDA(dtm, k = 4)
-ap_lda
-
-ap_lda_td <- tidy(ldaOut)
-ap_lda_td
-
-ap_top_terms <- ap_lda_td %>%
-  group_by(topic) %>%
-  top_n(10, beta) %>%
-  ungroup() %>%
-  arrange(topic, -beta)
-
-ap_top_terms %>%
-  mutate(term = reorder(term, beta)) %>%
-  ggplot(aes(term, beta, fill = factor(topic))) +
-  geom_bar(stat = "identity", show.legend = FALSE) +
-  facet_wrap(~ topic, scales = "free") +
-  coord_flip()
-
 ```
-
-## Step 12 - Sentiment analysis when going through speeches
 
 ```{r}
-ggplot.flow(ff.all, "AbrahamLincoln")
-ggplot.flow(ff.all, "RichardNixon")
-ggplot.flow(ff.all, "GeorgeWBush")
-ggplot.flow(ff.all, "RonaldReagan")
-ggplot.flow(ff.all, "BarackObama")
+
+# # subset dtm - 1st term speeches
+# list <- paste0("inaug",president.list,"-1.txt")
+# dtm.1 <- dtm[list,]
+# 
+# # subset dtm - 1st term speeches
+# list <- paste0("inaug",president.list,"-2.txt")
+# dtm.2 <- dtm[list,]
+# 
+# # set parameters for Gibbs sampling
+# burnin <- 4000
+# iter <- 2000
+# thin <- 500
+# seed <-list(2003,5,63,100001,765)
+# nstart <- 5
+# best <- TRUE
+# # number of topics
+# k <- 15
+# 
+# # run LDA using Gibbs sampling
+# ldaOut.1 <-LDA(dtm.1, k, method="Gibbs", control=list(nstart=nstart, 
+#                                                  seed = seed, best=best,
+#                                                  burnin = burnin, iter = iter, 
+#                                                  thin=thin))
+# 
+# ldaOut.2 <-LDA(dtm.2, k, method="Gibbs", control=list(nstart=nstart, 
+#                                                  seed = seed, best=best,
+#                                                  burnin = burnin, iter = iter, 
+#                                                  thin=thin))
+
 ```
 
+```{r}
+# 
+# # visualisation
+# ap_lda <- LDA(dtm, k = 4)
+# ap_lda
+# 
+# ap_lda_td <- tidy(ldaOut)
+# ap_lda_td
+# 
+# ap_top_terms <- ap_lda_td %>%
+#   group_by(topic) %>%
+#   top_n(10, beta) %>%
+#   ungroup() %>%
+#   arrange(topic, -beta)
+# 
+# ap_top_terms %>%
+#   mutate(term = reorder(term, beta)) %>%
+#   ggplot(aes(term, beta, fill = factor(topic))) +
+#   geom_bar(stat = "identity", show.legend = FALSE) +
+#   facet_wrap(~ topic, scales = "free") +
+#   coord_flip()
+```
 

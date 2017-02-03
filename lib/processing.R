@@ -1,5 +1,5 @@
 
-# function update.tables
+#### function update.tables ####
 # this function takes as an input a tibble and the list of presidents to keep and returns 
 # .. the subset table
 update.tables <- function(arg1, arg2){
@@ -14,7 +14,7 @@ update.tables <- function(arg1, arg2){
   return(arg1)
 }
 
-# funtion flow
+##### funtion flow ####
 # this function takes as an input the name of the president and the corpus and return 
 # .. a sentiment score for each section of his speech (the number of 
 # .. sections has eben defined to 20)
@@ -41,5 +41,5 @@ flow <- function(corpus, president, term){
   
   # compute sentiment score per section
   speech.flow <- summarise(group_by(speech, section), score = sum(sentiment))
-  
+  return(speech.flow)
 }
