@@ -566,7 +566,7 @@ topicProbabilities <- as_tibble(ldaOut@gamma)
 ```
 
 
-```{r}
+```{r, fig.height=15, fig.align="center"}
 ## LDA Visualization
 
 # Visualize top 10 terms per topic
@@ -580,9 +580,12 @@ ldaOut.top.terms %>%
   mutate(term = reorder(term, beta)) %>%
   ggplot(aes(term, beta, fill = factor(topic))) +
   geom_bar(stat = "identity", show.legend = FALSE) +
-  facet_wrap(~ topic, scales = "free") +
+  facet_wrap(~ topic, scales = "free", ncol=3, nrow=5) +
   coord_flip()
 
+```
+
+```{r}
 # Visualize Topics per speech
 print(as.matrix(ldaOut.topics.2))
 ```
