@@ -16,7 +16,10 @@ I will try to answer the following questions:
 *  Is he more optimistic or more realistic?   
 Of course, I'll adapt my study depending on what I find during the process.
 
-[Note] Don't forget to download the entire folder provided as each subfolder is important. 
+[Note] 
+*  Don't forget to download the entire folder provided as each subfolder is important. 
+*  This notebook contaisn shiny Apps, that's why I didn't publish any .html file, you will need to run it from RStudio
+*  Run Time: Around 15 minutes
 
 ## Step 0 - Install and load libraries
 ```{r, message=FALSE, warning=FALSE}
@@ -506,11 +509,19 @@ f
 
 Overall, the number of negative sections seems to have increased from the 1st speech to the 2nd speech in this subset of presidents. However there is no strong pattern. 
 
-What would be interesting now is to try to understand what concerned presidents. To do that, we will use topic modelling. 
+## Conclusion
 
-## Step 12 - Topic Modeling
+Presidents tend to begin their second term in office with a more pessimistic speech - they are talking in a more negative way and some emotions like fear are more present in their speeches while trust seems to be overshadow. In addition, their speeches focus more on conflicts. 
+We could make some assumptions on the reason why this is the case. Presidents may be more realistic about the impact they will have. They may be less moved because it is not the first time they are doing this type of speech. They may have a better understanding of what is at stake for their second mandate and, as a result be more precise about problems they will have to solve. 
+
+What would be interesting now is to try to understand which topics concerned presidents. To do that, we could use topic modelling. 
+I won't develop this analysis here. However, you can find below some starters for a LDA analysis and some visualization of the results - further interpretation of those results will be necessary.
+
+
+## Future Developments - Topic Modeling
 
 ```{r}
+## LDA Implementation
 
 # subset dtm - 1§ president having done two terms in office
 list1 <- paste0("inaug",president.list,"-1.txt")
@@ -529,65 +540,49 @@ best <- TRUE
 k <- 15
 
 # run LDA using Gibbs sampling
-ldaOut.1 <-LDA(dtm.subset, k, method="Gibbs", control=list(nstart=nstart, 
+ldaOut <-LDA(dtm.subset, k, method="Gibbs", control=list(nstart=nstart, 
                                                  seed = seed, best=best,
                                                  burnin = burnin, iter = iter, 
                                                  thin=thin))
 ```
 
-```{r}
-
-# # subset dtm - 1st term speeches
-# list <- paste0("inaug",president.list,"-1.txt")
-# dtm.1 <- dtm[list,]
-# 
-# # subset dtm - 1st term speeches
-# list <- paste0("inaug",president.list,"-2.txt")
-# dtm.2 <- dtm[list,]
-# 
-# # set parameters for Gibbs sampling
-# burnin <- 4000
-# iter <- 2000
-# thin <- 500
-# seed <-list(2003,5,63,100001,765)
-# nstart <- 5
-# best <- TRUE
-# # number of topics
-# k <- 15
-# 
-# # run LDA using Gibbs sampling
-# ldaOut.1 <-LDA(dtm.1, k, method="Gibbs", control=list(nstart=nstart, 
-#                                                  seed = seed, best=best,
-#                                                  burnin = burnin, iter = iter, 
-#                                                  thin=thin))
-# 
-# ldaOut.2 <-LDA(dtm.2, k, method="Gibbs", control=list(nstart=nstart, 
-#                                                  seed = seed, best=best,
-#                                                  burnin = burnin, iter = iter, 
-#                                                  thin=thin))
-
-```
 
 ```{r}
-# 
-# # visualisation
-# ap_lda <- LDA(dtm, k = 4)
-# ap_lda
-# 
-# ap_lda_td <- tidy(ldaOut)
-# ap_lda_td
-# 
-# ap_top_terms <- ap_lda_td %>%
-#   group_by(topic) %>%
-#   top_n(10, beta) %>%
-#   ungroup() %>%
-#   arrange(topic, -beta)
-# 
-# ap_top_terms %>%
-#   mutate(term = reorder(term, beta)) %>%
-#   ggplot(aes(term, beta, fill = factor(topic))) +
-#   geom_bar(stat = "identity", show.legend = FALSE) +
-#   facet_wrap(~ topic, scales = "free") +
-#   coord_flip()
+## LDA Results
+# results
+ldaOut.tidy <- tidy(ldaOut)
+
+# associates each doc to one topic
+ldaOut.topics <- as_tibble(topics(ldaOut))
+
+# associates each doc to 2 topics
+ldaOut.topics.2 <- as_tibble(topics(ldaOut, 2))
+
+# top 20 terms in each topic
+ldaOut.terms <- as_tibble(terms(ldaOut,20))
+
+# probabilities associated with each topic assignment
+topicProbabilities <- as_tibble(ldaOut@gamma)
 ```
 
+
+```{r}
+## LDA Visualization
+
+# Visualize top 10 terms per topic
+ldaOut.top.terms <- ldaOut.tidy %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+
+ldaOut.top.terms %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
+
+# Visualize Topics per speech
+print(as.matrix(ldaOut.topics.2))
+```
